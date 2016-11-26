@@ -39,22 +39,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case  R.id.button: {
                 rl.setBackgroundColor(getResources().getColor(R.color.white));
+                buttonRl.setVisibility(View.GONE);
+                isButtonsVisible = false;
                 break;
             }
             case  R.id.button2: {
                 rl.setBackgroundColor(getResources().getColor(R.color.black));
+                buttonRl.setVisibility(View.GONE);
+                isButtonsVisible = false;
                 break;
             }
             case  R.id.button3: {
                 rl.setBackgroundColor(getResources().getColor(R.color.red));
+                buttonRl.setVisibility(View.GONE);
+                isButtonsVisible = false;
                 break;
             }
             case  R.id.button4: {
                 rl.setBackgroundColor(getResources().getColor(R.color.yellow));
+                buttonRl.setVisibility(View.GONE);
+                isButtonsVisible = false;
                 break;
             }
             case  R.id.button5: {
                 rl.setBackgroundColor(getResources().getColor(R.color.green));
+                buttonRl.setVisibility(View.GONE);
+                isButtonsVisible = false;
                 break;
             }
             case R.id.mainRelLayout:{
