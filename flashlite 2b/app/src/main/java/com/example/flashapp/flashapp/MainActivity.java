@@ -1,7 +1,9 @@
 package com.example.flashapp.flashapp;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.content.DialogInterface;
 import android.support.v4.content.ContextCompat;
@@ -16,6 +18,9 @@ import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     RelativeLayout rl = null;
@@ -25,14 +30,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String[] options = {"Hidden", "Visible", "Cancel"};
     View toDisplayInDialog = null;
     AlertDialog.Builder builder = null;
+    AlertDialog.Builder builderUserChoice = null;
+    String selectedColor = "";
+
+    /**
+     * @author MOHIT SARANG
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-        AlertDialog.Builder builderUserChoice = new AlertDialog.Builder(MainActivity.this);
+        if (Build.VERSION.SDK_INT < 16) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else {
+            android.support.v7.app.ActionBar mActionBar = getSupportActionBar();
+            mActionBar.hide();
+        }
+        builderUserChoice = new AlertDialog.Builder(MainActivity.this);
         builderUserChoice.setTitle("Startup Button Visibility").setItems(options, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -123,30 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         green.setOnClickListener(this);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if(prefs.contains("defaultBackground")){
-            switch (prefs.getString("defaultBackground", null)) {
-                case "white": {
-                    rl.setBackgroundColor(getResources().getColor(R.color.white));
-                    break;
-                }
-                case "black": {
-                    rl.setBackgroundColor(getResources().getColor(R.color.black));
-                    break;
-                }
-                case "red": {
-                    rl.setBackgroundColor(getResources().getColor(R.color.red));
-                    break;
-                }
-                case "yellow": {
-                    rl.setBackgroundColor(getResources().getColor(R.color.yellow));
-                    break;
-                }
-                case "green": {
-                    rl.setBackgroundColor(getResources().getColor(R.color.green));
-                    break;
-                }
-
-                //.... etc
-            }
+            setBackgroundColor(prefs.getString("defaultBackground", null));
         }
         if(prefs.getString("userChoice", "").equals("Hidden")){
             if(buttonRl.getVisibility() != View.GONE){
@@ -164,41 +159,96 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if((prefs.getString("userChoice", "").equals("Cancel")) || !prefs.contains("userChoice")){
             builderUserChoice.show();
         }
+        if (savedInstanceState != null && savedInstanceState.containsKey("selectedColor")){
+            setBackgroundColor(savedInstanceState.getString("selectedColor"));
+        }
     }
 
-    public void onSetupColor(View v) {
-
+    /**
+     * @author MOHIT SARANG
+     * @param savedInstance
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstance) {
+        super.onSaveInstanceState(savedInstance);
+        savedInstance.putString("selectedColor", selectedColor);
     }
 
+    /**
+     * @author MOHIT SARANG
+     * @param menu
+     * @return
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.layout.menu, menu);
+        return true;
+    }
+
+    /**
+     * @author MOHIT SARANG
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+
+        switch (item.getItemId())
+        {
+            case R.id.btnVisibility:
+                builderUserChoice.show();
+                return true;
+
+            case R.id.startupColor:
+                builder.show();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * @author MOHIT SARANG
+     * @param v
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button: {
                 rl.setBackgroundColor(getResources().getColor(R.color.white));
                 buttonRl.setVisibility(View.GONE);
+                selectedColor = "white";
                 isButtonsVisible = false;
                 break;
             }
             case R.id.button2: {
                 rl.setBackgroundColor(getResources().getColor(R.color.black));
                 buttonRl.setVisibility(View.GONE);
+                selectedColor = "black";
                 isButtonsVisible = false;
                 break;
             }
             case R.id.button3: {
                 rl.setBackgroundColor(getResources().getColor(R.color.red));
                 buttonRl.setVisibility(View.GONE);
+                selectedColor = "red";
                 isButtonsVisible = false;
                 break;
             }
             case R.id.button4: {
                 rl.setBackgroundColor(getResources().getColor(R.color.yellow));
+                selectedColor = "yellow";
                 buttonRl.setVisibility(View.GONE);
                 isButtonsVisible = false;
                 break;
             }
             case R.id.button5: {
                 rl.setBackgroundColor(getResources().getColor(R.color.green));
+                selectedColor = "green";
                 buttonRl.setVisibility(View.GONE);
                 isButtonsVisible = false;
                 break;
@@ -211,6 +261,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     buttonRl.setVisibility(View.VISIBLE);
                 }
                 isButtonsVisible = !isButtonsVisible;
+                android.support.v7.app.ActionBar mActionBar = getSupportActionBar();
+                if(isButtonsVisible){
+                    mActionBar.show();
+                } else {
+                    mActionBar.hide();
+                }
+
+                break;
+            }
+
+            //.... etc
+        }
+    }
+
+    /**
+     * @author MOHIT SARANG
+     * @param colorName
+     */
+    public void setBackgroundColor(String colorName){
+        switch (colorName) {
+            case "white": {
+                rl.setBackgroundColor(getResources().getColor(R.color.white));
+                selectedColor = "white";
+                break;
+            }
+            case "black": {
+                rl.setBackgroundColor(getResources().getColor(R.color.black));
+                selectedColor = "black";
+                break;
+            }
+            case "red": {
+                rl.setBackgroundColor(getResources().getColor(R.color.red));
+                selectedColor = "red";
+                break;
+            }
+            case "yellow": {
+                rl.setBackgroundColor(getResources().getColor(R.color.yellow));
+                selectedColor = "yellow";
+                break;
+            }
+            case "green": {
+                rl.setBackgroundColor(getResources().getColor(R.color.green));
+                selectedColor = "green";
                 break;
             }
 
