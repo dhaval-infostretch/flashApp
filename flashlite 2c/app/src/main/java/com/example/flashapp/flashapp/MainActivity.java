@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -24,7 +25,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     RelativeLayout rl = null;
-    RelativeLayout buttonRl = null;
+    LinearLayout buttonRl = null;
     Boolean isButtonsVisible = true;
     TextView tv = null;
     String[] options = {"Hidden", "Visible", "Cancel"};
@@ -44,13 +45,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT < 16) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else {
-            android.support.v7.app.ActionBar mActionBar = getSupportActionBar();
-            mActionBar.hide();
+        if (Build.VERSION.SDK_INT > 16) {
+        android.support.v7.app.ActionBar mActionBar = getSupportActionBar();
+        mActionBar.hide();
         }
         builderUserChoice = new AlertDialog.Builder(MainActivity.this);
         builderUserChoice.setTitle("Startup Button Visibility").setItems(options, new DialogInterface.OnClickListener() {
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
 
         rl = (RelativeLayout) findViewById(R.id.mainRelLayout);
-        buttonRl = (RelativeLayout) findViewById(R.id.buttonRelLayout);
+        buttonRl = (LinearLayout) findViewById(R.id.buttonRelLayout);
         tv = (TextView) findViewById(R.id.textView);
         rl.setOnClickListener(this);
         final Button white = (Button) findViewById(R.id.button);
@@ -209,6 +209,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
 
             case R.id.startupColor:
+                toDisplayInDialog = null;
+                toDisplayInDialog = getLayoutInflater().inflate(R.layout.radiogroup, null);
+                builder.setView(toDisplayInDialog);
                 builder.show();
                 return true;
 
