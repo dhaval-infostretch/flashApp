@@ -32,10 +32,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     View toDisplayInDialog = null;
     AlertDialog.Builder builder = null;
     AlertDialog.Builder builderUserChoice = null;
+    Boolean isSetStartupDialogOpen = false;
+    Boolean isBtnVisibleOpen = false;
     String selectedColor = "";
     ProgressBar progressBar;
     sosActivity signal;
 
+    RadioGroup radioBtnGrp;
+    int radioGroupId;
+    RadioButton myCheckedButton;
+    int index = -1;
     /**
      * @author MOHIT SARANG
      * @param savedInstanceState
@@ -71,23 +77,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                 }
                 editor.commit();
+                isBtnVisibleOpen = false;
                 if(!prefs.contains("defaultBackground")){
                     builder.show();
                 }
             }
         });
+
         toDisplayInDialog = getLayoutInflater().inflate(R.layout.radiogroup, null);
         builder = new AlertDialog.Builder(MainActivity.this);
         builder.setView(toDisplayInDialog);
+        radioBtnGrp = (RadioGroup) toDisplayInDialog.findViewById(R.id.radioGroup);
         builder.setPositiveButton("Set Startup Color",
             new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    RadioGroup radioBtnGrp = (RadioGroup) toDisplayInDialog.findViewById(R.id.radioGroup);
-                    int radioGroupId = radioBtnGrp.getCheckedRadioButtonId();
-                    RadioButton myCheckedButton = (RadioButton) toDisplayInDialog.findViewById(radioGroupId);
-                    int index = radioBtnGrp.indexOfChild(myCheckedButton);
+                    radioGroupId = radioBtnGrp.getCheckedRadioButtonId();
+                    myCheckedButton = (RadioButton) toDisplayInDialog.findViewById(radioGroupId);
+                    index = radioBtnGrp.indexOfChild(myCheckedButton);
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = prefs.edit();
                     switch (index) {
@@ -114,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     }
                     editor.commit();
+                    isSetStartupDialogOpen = false;
                     dialog.dismiss();
                 }
             });
@@ -122,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    isSetStartupDialogOpen = false;
                     dialog.dismiss();
 
                 }
@@ -164,9 +174,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if((prefs.getString("userChoice", "").equals("Cancel")) || !prefs.contains("userChoice")){
             builderUserChoice.show();
+            isBtnVisibleOpen = true;
         }
-        if (savedInstanceState != null && savedInstanceState.containsKey("selectedColor")){
-            setBackgroundColor(savedInstanceState.getString("selectedColor"));
+        if (savedInstanceState != null){
+            if(savedInstanceState.containsKey("selectedColor")){
+                setBackgroundColor(savedInstanceState.getString("selectedColor"));
+            }
+            if(savedInstanceState.containsKey("getCheckedColor")  && savedInstanceState.getInt("getCheckedColor") != -1){
+                ((RadioButton)radioBtnGrp.getChildAt(savedInstanceState.getInt("getCheckedColor"))).setChecked(true);
+            }
+            if(savedInstanceState.containsKey("isBtnVisibleOpen") && savedInstanceState.getBoolean("isBtnVisibleOpen")){
+                builderUserChoice.show();
+                isBtnVisibleOpen = true;
+            } else if(savedInstanceState.containsKey("isSetStartupDialogOpen") && savedInstanceState.getBoolean("isSetStartupDialogOpen")){
+                toDisplayInDialog = null;
+                toDisplayInDialog = getLayoutInflater().inflate(R.layout.radiogroup, null);
+                builder.setView(toDisplayInDialog);
+                builder.show();
+                isSetStartupDialogOpen = true;
+            }
         }
     }
 
@@ -178,6 +204,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onSaveInstanceState(Bundle savedInstance) {
         super.onSaveInstanceState(savedInstance);
         savedInstance.putString("selectedColor", selectedColor);
+        if(isSetStartupDialogOpen){
+            savedInstance.putBoolean("isSetStartupDialogOpen", true);
+        } else {
+            savedInstance.putBoolean("isSetStartupDialogOpen", false);
+        }
+        if(isBtnVisibleOpen){
+            savedInstance.putBoolean("isBtnVisibleOpen", true);
+        } else {
+            savedInstance.putBoolean("isBtnVisibleOpen", false);
+        }
+        radioGroupId = radioBtnGrp.getCheckedRadioButtonId();
+        myCheckedButton = (RadioButton) toDisplayInDialog.findViewById(radioGroupId);
+        index = radioBtnGrp.indexOfChild(myCheckedButton);
+        savedInstance.putInt("getCheckedColor",index);
     }
 
     /**
@@ -206,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         {
             case R.id.btnVisibility:
                 builderUserChoice.show();
+                isBtnVisibleOpen = true;
                 return true;
 
             case R.id.startupColor:
@@ -213,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 toDisplayInDialog = getLayoutInflater().inflate(R.layout.radiogroup, null);
                 builder.setView(toDisplayInDialog);
                 builder.show();
+                isSetStartupDialogOpen = true;
                 return true;
 
             default:
