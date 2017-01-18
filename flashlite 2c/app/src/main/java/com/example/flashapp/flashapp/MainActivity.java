@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     AlertDialog.Builder builderUserChoice = null;
     Boolean isSetStartupDialogOpen = false;
     Boolean isBtnVisibleOpen = false;
+    Boolean isCanceled = false;
     String selectedColor = "";
     ProgressBar progressBar;
     sosActivity signal;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                     case 2:
                         editor.putString("userChoice", "Cancel");
+                        isCanceled = true;
                         break;
                 }
                 editor.commit();
@@ -101,22 +103,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     switch (indexDialogue) {
                         case 0:
                             rl.setBackgroundColor(getResources().getColor(R.color.black));
+                            selectedColor = "black";
                             editor.putString("defaultBackground", "black");
                             break;
                         case 1:
                             rl.setBackgroundColor(getResources().getColor(R.color.white));
+                            selectedColor = "white";
                             editor.putString("defaultBackground", "white");
                             break;
                         case 2:
                             rl.setBackgroundColor(getResources().getColor(R.color.red));
+                            selectedColor = "red";
                             editor.putString("defaultBackground", "red");
                             break;
                         case 3:
                             rl.setBackgroundColor(getResources().getColor(R.color.yellow));
+                            selectedColor = "yellow";
                             editor.putString("defaultBackground", "yellow");
                             break;
                         case 4:
                             rl.setBackgroundColor(getResources().getColor(R.color.green));
+                            selectedColor = "green";
                             editor.putString("defaultBackground", "green");
                             break;
 
@@ -172,8 +179,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 builder.show();
             }
         }
+
         if((prefs.getString("userChoice", "").equals("Cancel")) || !prefs.contains("userChoice")){
             builderUserChoice.show();
+            isCanceled = false;
             isBtnVisibleOpen = true;
         }
         if (savedInstanceState != null){
@@ -184,9 +193,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 radioBtnGrp = (RadioGroup) toDisplayInDialog.findViewById(R.id.radioGroup);
                 ((RadioButton)radioBtnGrp.getChildAt(savedInstanceState.getInt("getCheckedColor"))).setChecked(true);
             }
-            if(savedInstanceState.containsKey("isBtnVisibleOpen") && savedInstanceState.getBoolean("isBtnVisibleOpen")){
+            if(savedInstanceState.containsKey("isBtnVisibleOpen") && savedInstanceState.getBoolean("isBtnVisibleOpen") && !isBtnVisibleOpen){
                 builderUserChoice.show();
+                savedInstanceState.putBoolean("isCanceled",false);
                 isBtnVisibleOpen = true;
+                isCanceled = false;
             } else if(savedInstanceState.containsKey("isSetStartupDialogOpen") && savedInstanceState.getBoolean("isSetStartupDialogOpen")){
                 toDisplayInDialog = null;
                 toDisplayInDialog = getLayoutInflater().inflate(R.layout.radiogroup, null);
@@ -214,6 +225,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             savedInstance.putBoolean("isBtnVisibleOpen", true);
         } else {
             savedInstance.putBoolean("isBtnVisibleOpen", false);
+        }
+        if(isCanceled){
+            savedInstance.putBoolean("isCanceled", true);
+        } else {
+            savedInstance.putBoolean("isCanceled", false);
         }
         radioBtnGrp = (RadioGroup) toDisplayInDialog.findViewById(R.id.radioGroup);
         radioGroupId = radioBtnGrp.getCheckedRadioButtonId();
@@ -249,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btnVisibility:
                 builderUserChoice.show();
                 isBtnVisibleOpen = true;
+                isCanceled = false;
                 return true;
 
             case R.id.startupColor:
